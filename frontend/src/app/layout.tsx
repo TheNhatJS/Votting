@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { WalletContextProvider } from "@/context/wallet";
+import { SessionProvider } from "next-auth/react";
+import { ReactNode } from "react";
+import ProviderLayout from "@/components/layouts/ProviderLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,16 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <WalletContextProvider>
-        <body
-          className={`${inter.className} text-[#EAECEF] bg-[#202328]`}
-        >
-          <div className="relative bg-custom-image bg-no-repeat bg-center bg-cover bg-fixed">
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/20"></div>
-              {children}           
-          </div>
-        </body>
-      </WalletContextProvider>
+      <body className={`${inter.className} text-[#EAECEF] bg-[#202328]`}>
+        <div className="relative bg-custom-image bg-no-repeat bg-center bg-cover bg-fixed">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/20"></div>
+          <ProviderLayout>{children}</ProviderLayout>
+        </div>
+      </body>
     </html>
   );
 }

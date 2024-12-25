@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import LoadingSpinner from "./components/share/LoadingSpiner"
-import { WalletContext } from "@/context/wallet";
+import LoadingSpinner from "../components/share/LoadingSpiner"
 import { useContext, useState } from "react";
 import Link from "next/link";
 import detectEthereumProvider from "@metamask/detect-provider";
@@ -10,21 +9,12 @@ import { Toaster, toast } from 'sonner'
 import { BrowserProvider } from "ethers";
 import { useRouter } from "next/navigation";
 
+import { signIn } from "next-auth/react";
+
 export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const context = useContext(WalletContext);
-  if (!context) return null;
-
-  const {
-    isConnected,
-    setIsConnected,
-    userAddress,
-    setUserAddress,
-    signer,
-    setSigner
-  } = context;
 
   const connectWallet = async () => {
     const provider: any = await detectEthereumProvider();
@@ -33,10 +23,12 @@ export default function Home() {
         setIsLoading(true);
         const ethersProvider = new BrowserProvider(provider);
         const signer = await ethersProvider.getSigner();
-        setSigner(signer);
-        const acounts = await ethersProvider.send("eth_requestAccounts", []);
-        setIsConnected(true);
-        setUserAddress(acounts[0]);
+        const currentAccount = await signer.getAddress();
+
+        await signIn("login-with-id", {
+          redirect: false,
+          id: currentAccount,
+        });
 
         const network = await ethersProvider.getNetwork();
         const chainID = network.chainId;
@@ -49,13 +41,13 @@ export default function Home() {
         }
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        
+
 
       } catch (error) {
         toast.error("Lỗi khi đăng nhập!");
       }
       setIsLoading(false);
-      toast.success(userAddress);
+      router.push('./hoi-nhom-binh-chon');
 
     }
   }
