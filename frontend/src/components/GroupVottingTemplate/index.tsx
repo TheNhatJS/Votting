@@ -97,7 +97,7 @@ export default function Home() {
                     <h2 className="text-2xl text-center font-bold uppercase mb-4">Danh Sách Cuộc Bình Chọn</h2>
                     <div className="mb-4 text-center">
                         {isAdmin && (
-                            <Link href="/tao-bau-cu">
+                            <Link href="/tao-cuoc-bau-cu">
                                 <button className="py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200">
                                     Tạo Cuộc Bầu Cử
                                 </button>
