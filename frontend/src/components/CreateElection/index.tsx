@@ -6,6 +6,7 @@ import ContractABI from "@/data/abi.contract.json";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { FaTrash } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
 
 type ElectionData = {
     name: string;
@@ -18,6 +19,9 @@ type ElectionData = {
 };
 
 export default function CreateElectionTemPlate() {
+    const router = useRouter();
+    const { data: session } = useSession();
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const [electionData, setElectionData] = useState<ElectionData>({
         name: "",
@@ -42,6 +46,29 @@ export default function CreateElectionTemPlate() {
             candidates: electionData.candidates.filter((_, i) => i !== index)
         })
     }
+
+    useEffect(() => {
+        const checkAdmin = async () => {
+            if(session?.user?.id) {
+                const provider: any = await detectEthereumProvider();
+                if (provider) {
+                    const ethersProvider = new ethers.BrowserProvider(provider);
+                    const signer = await ethersProvider.getSigner();
+                    const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
+
+                    const owner = await contract.owner();
+
+                    if(owner.toLowerCase() === session.user.id.toLowerCase()) {
+                        setIsAdmin(true);
+                    } else {
+                        router.push("/hoi-nhom-binh-chon");
+                    }
+                }
+            }
+        }
+
+        checkAdmin();
+    }, [session]);
 
     return (
         <>
