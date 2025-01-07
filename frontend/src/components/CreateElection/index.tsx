@@ -3,10 +3,11 @@ import Header from "../Header";
 import { ethers } from "ethers";
 import detectEthereumProvider from "@metamask/detect-provider";
 import ContractABI from "@/data/abi.contract.json";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { FaTrash } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
+import { uploadFileToIPFS } from "@/app/api/upload/image/route";
 
 type ElectionData = {
     name: string;
@@ -33,6 +34,82 @@ export default function CreateElectionTemPlate() {
         describe: "",
     });
 
+    //Upload file lên IPFS
+    async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) {
+            const data = new FormData();
+            data.set("file", file);
+            const res: any = await uploadFileToIPFS(data);
+            console.log("res: ",res.pinataURL);
+            if (res.success) {
+                setElectionData({
+                    ...electionData,
+                    imageUrlElection: res.pinataURL,
+                });
+            } else {
+                console.log(res.message);
+            }
+        }
+    }
+
+    async function onFileChangeCandidate(e: React.ChangeEvent<HTMLInputElement>, index: number) {
+        const file = e.target.files?.[0];
+        if (file) {
+            const data = new FormData();
+            data.set("file", file);
+            const res: any = await uploadFileToIPFS(data);
+            if (res.success) {
+                const newImageUrl = [...electionData.imageUrl];
+                newImageUrl[index] = res.pinataURL;
+                setElectionData({
+                    ...electionData,
+                    imageUrl: newImageUrl,
+                });
+            } else {
+                console.log(res.message);
+            }
+        }
+    }
+
+    //Tạo cuộc bầu cử
+    async function createElection(e: any) {
+        const provider: any = await detectEthereumProvider();
+        if (provider) {
+            const ethersProvider = new ethers.BrowserProvider(provider);
+            const signer = await ethersProvider.getSigner();
+            const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
+
+            if (electionData.candidates.length !== electionData.imageUrl.length) {
+                console.error("Candidates and image URLs must match");
+                return;
+            }
+
+            try {
+                const res = await contract.createElection(
+                    electionData.name,
+                    electionData.durationInMinutes,
+                    electionData.candidates,
+                    electionData.imageUrl,
+                    electionData.imageUrlElection,
+                    electionData.allowedVoters,
+                    electionData.describe
+                );
+
+                console.log("res: ", res);
+                console.log("imageURLE: ", electionData.imageUrlElection);
+                console.log("imageCandidate: ", electionData.imageUrl);
+                console.log("name: ", electionData.name);
+                console.log("describe: ", electionData.describe);
+                console.log("allowvoter: ", electionData.allowedVoters);
+                console.log("candidate: ", electionData.candidates);
+
+            } catch (error) {
+                console.error("Error creating election:", error);
+            }
+        }
+    }
+
     const removeVoter = (index: number) => {
         setElectionData({
             ...electionData,
@@ -43,13 +120,15 @@ export default function CreateElectionTemPlate() {
     const removeCandidate = (index: number) => {
         setElectionData({
             ...electionData,
-            candidates: electionData.candidates.filter((_, i) => i !== index)
-        })
-    }
+            candidates: electionData.candidates.filter((_, i) => i !== index),
+            imageUrl: electionData.imageUrl.filter((_, i) => i !== index)
+        });
+    };
 
+    //Kiểm tra có phải Admin không?
     useEffect(() => {
         const checkAdmin = async () => {
-            if(session?.user?.id) {
+            if (session?.user?.id) {
                 const provider: any = await detectEthereumProvider();
                 if (provider) {
                     const ethersProvider = new ethers.BrowserProvider(provider);
@@ -58,14 +137,14 @@ export default function CreateElectionTemPlate() {
 
                     const owner = await contract.owner();
 
-                    if(owner.toLowerCase() === session.user.id.toLowerCase()) {
+                    if (owner.toLowerCase() === session.user.id.toLowerCase()) {
                         setIsAdmin(true);
                     } else {
                         router.push("/hoi-nhom-binh-chon");
                     }
                 }
             }
-        }
+        };
 
         checkAdmin();
     }, [session]);
@@ -88,7 +167,7 @@ export default function CreateElectionTemPlate() {
                                     setElectionData({
                                         ...electionData,
                                         name: e.target.value
-                                    })
+                                    });
                                 }}
                             />
                         </div>
@@ -103,8 +182,8 @@ export default function CreateElectionTemPlate() {
                                 onChange={(e) => {
                                     setElectionData({
                                         ...electionData,
-                                        durationInMinutes: + e.target.value
-                                    })
+                                        durationInMinutes: +e.target.value
+                                    });
                                 }}
                             />
                         </div>
@@ -122,6 +201,10 @@ export default function CreateElectionTemPlate() {
                                             candidates: [
                                                 ...electionData.candidates,
                                                 (e.target as HTMLInputElement).value
+                                            ],
+                                            imageUrl: [
+                                                ...electionData.imageUrl,
+                                                ""
                                             ]
                                         });
 
@@ -140,7 +223,10 @@ export default function CreateElectionTemPlate() {
                                             >
                                                 <div className="flex flex-col">
                                                     <div>{candidate}</div>
-                                                    <input type="file" />
+                                                    <input
+                                                        type="file"
+                                                        onChange={(e) => onFileChangeCandidate(e, index)}
+                                                    />
                                                 </div>
                                                 <button
                                                     className="text-red-500"
@@ -203,15 +289,8 @@ export default function CreateElectionTemPlate() {
                             <input
                                 className="mt-2 p-2 border rounded-md w-full text-white"
                                 type="file"
-                                value={electionData.imageUrlElection}
-                                onChange={(e) => {
-                                    setElectionData({
-                                        ...electionData,
-                                        imageUrlElection: e.target.value
-                                    })
-                                }}
+                                onChange={onFileChange}
                             />
-
                         </div>
 
                         <div className="mb-4">
@@ -223,23 +302,20 @@ export default function CreateElectionTemPlate() {
                                     setElectionData({
                                         ...electionData,
                                         describe: e.target.value
-                                    })
+                                    });
                                 }}
                             />
-
                         </div>
-
-
                     </div>
 
                     <button
-                        className="mt-4 w-full max-w-80 ml-[50%] translate-x-[-50%] bg-blue-600 text-white p-2 rounded-md hover:bg-blue-500 transition duration-200" onClick={() => console.log(electionData)}
+                        className="mt-4 w-full max-w-80 ml-[50%] translate-x-[-50%] bg-blue-600 text-white p-2 rounded-md hover:bg-blue-500 transition duration-200"
+                        onClick={createElection}
                     >
                         Tạo cuộc bình chọn
                     </button>
-
                 </div>
             </div>
         </>
-    )
+    );
 }

@@ -8,6 +8,7 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import ContractABI from "@/data/abi.contract.json";
 import { ethers } from "ethers";
 import Link from "next/link";
+import getIpfsUrlFromPinata from "@/app/api/upload/image/utils";
 
 
 export default function Home() {
@@ -34,32 +35,48 @@ export default function Home() {
                 const ethersProvider = new ethers.BrowserProvider(provider);
                 const signer = await ethersProvider.getSigner();
                 const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
-
+    
                 const elections: any[] = await contract.getAllElections();
-
-                const formattedElections: Elections[] = elections.map((election: any) => ({
-                    id: election.idElection,
-                    name: election.name,
-                    imageUrlElection: election.imageUrlElection,
-                    describe: election.describe,
-                    endTime: election.endTime,
-                    candidates: election.candidates
-                }));
+    
+                // const formattedElections: Elections[] = elections.map((election: any) => ({
+                    
+                //     id: election.idElection,
+                //     name: election.name,
+                //     imageUrlElection: getIpfsUrlFromPinata(election.imageUrlElection),
+                //     describe: election.describe,
+                //     endTime: election.endTime,
+                //     candidates: election.candidates
+                    
+                // }));
+    
+                const formattedElections: Elections[] = elections.map((election: any) => {
+                    const imageUrlElection = election.imageUrlElection;
+                    console.log("imageUrlElection:", imageUrlElection); // Log imageUrlElection
+    
+                    return {
+                        id: election.idElection,
+                        name: election.name,
+                        imageUrlElection: imageUrlElection,
+                        describe: election.describe,
+                        endTime: election.endTime,
+                        candidates: election.candidates
+                    };
+                });
 
                 console.log(formattedElections);
-
-                setAllElection(formattedElections);
+    
+                setAllElection(formattedElections.reverse());
                 setLoading(false);
             }
         } catch (error) {
-            console.error("Failed to fetch elections:", error);
+            console.error("Error fetching elections:", error);
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         fetchElectionList();
-    })
+    }, []);
 
 
     useEffect(() => {
@@ -108,14 +125,16 @@ export default function Home() {
                     {loading ? (
                         <p className="text-center">Đang tải danh sách cuộc bầu cử...</p>
                     ) : (
-                        <div className="h-[28rem] overflow-y-auto border border-gray-700 rounded-lg">
-                            <ul className="space-y-4 rounded-lg bg-opacity-70 backdrop-blur-sm">
-                                {getAllElection.map((election) => (
+                        <div className="h-[32rem] overflow-y-auto  rounded-lg scroll-smooth scrollbar-thin scrollbar-thumb scrollbar-track">
+                            <ul className="space-y-4 rounded-lg ">
+                                {getAllElection.map((election, index) => (
                                     <li key={election.id} className="p-4 border bg-slate-800 bg-opacity-70 backdrop-blur-sm border-gray-700 rounded-lg transition duration-300 flex justify-between items-center">
                                         <div className="w-2/3">
-                                            <h3 className="text-lg font-semibold">{election.name}</h3>
+                                            <h3 className="text-lg font-semibold">{index + 1}. {election.name}</h3>
+                                            <p className="text-[#b7bdc6]">Mô tả: {election.describe}</p>
+                                            <p className="text-[#b7bdc6]">Thời gian: {String(election.endTime)}</p>
                                             <h4 className="text-md font-semibold mb-2 text-gray-300">Danh sách cử tri:</h4>
-                                            <div className="h-32 overflow-y-auto border border-gray-700 rounded-lg p-2 custom-scrollbar">
+                                            <div className=" overflow-y-auto border border-gray-700 rounded-lg p-2 custom-scrollbar w-1/3 mb-4">
                                                 {election.candidates.length > 0 ? (
                                                     <ul className="space-y-2">
                                                         {election.candidates.map((candidate, index) => (
@@ -128,14 +147,12 @@ export default function Home() {
                                                     <p className="text-gray-400">Chưa có cử tri trong danh sách.</p>
                                                 )}
                                             </div>
-                                            <h5 className="text-lg font-semibold">Thời gian: {String(election.endTime)}</h5>
-
-                                            <p className="text-[#b7bdc6]">Mô tả: {election.describe}</p>
                                             <img
-                                                src={'../../../public/static/image/bg.jpg'}
+                                                src={election.imageUrlElection}
                                                 alt={"Ảnh cuộc bầu cử"}
-                                                className="w-2/3 h-32 object-contain rounded-lg mb-2"
+                                                className="w-2/3 object-cover rounded-lg mb-2 "
                                             />
+
                                         </div>
                                         <div className="flex flex-col items-start">
                                             <Link href={`/hoi-nhom-binh-chon/${election.id}`} title={election.name}>

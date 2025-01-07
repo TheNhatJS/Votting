@@ -4,6 +4,7 @@ import axios from "axios";
 
 const jwt = process.env.JWT;
 
+//UpLoad Image lên Pinata và trả về URL của Image trên IPFS
 export const uploadFileToIPFS = async (data: FormData) => {
     const file = data.get('file') as File | null;
     if (file) {
