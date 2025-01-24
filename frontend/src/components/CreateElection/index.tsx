@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { FaTrash } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { uploadFileToIPFS } from "@/app/api/upload/image/route";
+import { toast, Toaster } from "sonner";
 
 type ElectionData = {
     name: string;
@@ -35,23 +36,60 @@ export default function CreateElectionTemPlate() {
     });
 
     //Upload file lên IPFS
+    // async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    //     const file = e.target.files?.[0];
+    //     if (file) {
+    //         const data = new FormData();
+    //         data.set("file", file);
+    //         const res: any = await uploadFileToIPFS(data);
+    //         console.log("res: ",res.pinataURL);
+    //         if (res.success) {
+    //             setElectionData({
+    //                 ...electionData,
+    //                 imageUrlElection: res.pinataURL,
+    //             });
+    //         } else {
+    //             console.log(res.message);
+    //         }
+    //     }
+    // }
+
     async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (file) {
             const data = new FormData();
             data.set("file", file);
             const res: any = await uploadFileToIPFS(data);
-            console.log("res: ",res.pinataURL);
+            console.log("res: ", res.pinataURL);
             if (res.success) {
-                setElectionData({
-                    ...electionData,
+                setElectionData((prevData) => ({
+                    ...prevData,
                     imageUrlElection: res.pinataURL,
-                });
+                }));
             } else {
                 console.log(res.message);
             }
         }
     }
+
+    // async function onFileChangeCandidate(e: React.ChangeEvent<HTMLInputElement>, index: number) {
+    //     const file = e.target.files?.[0];
+    //     if (file) {
+    //         const data = new FormData();
+    //         data.set("file", file);
+    //         const res: any = await uploadFileToIPFS(data);
+    //         if (res.success) {
+    //             const newImageUrl = [...electionData.imageUrl];
+    //             newImageUrl[index] = res.pinataURL;
+    //             setElectionData({
+    //                 ...electionData,
+    //                 imageUrl: newImageUrl,
+    //             });
+    //         } else {
+    //             console.log(res.message);
+    //         }
+    //     }
+    // }
 
     async function onFileChangeCandidate(e: React.ChangeEvent<HTMLInputElement>, index: number) {
         const file = e.target.files?.[0];
@@ -59,12 +97,15 @@ export default function CreateElectionTemPlate() {
             const data = new FormData();
             data.set("file", file);
             const res: any = await uploadFileToIPFS(data);
+            console.log("res: ", res.pinataURL);
             if (res.success) {
-                const newImageUrl = [...electionData.imageUrl];
-                newImageUrl[index] = res.pinataURL;
-                setElectionData({
-                    ...electionData,
-                    imageUrl: newImageUrl,
+                setElectionData((prevData) => {
+                    const newImageUrl = [...prevData.imageUrl];
+                    newImageUrl[index] = res.pinataURL;
+                    return {
+                        ...prevData,
+                        imageUrl: newImageUrl,
+                    };
                 });
             } else {
                 console.log(res.message);
@@ -103,6 +144,13 @@ export default function CreateElectionTemPlate() {
                 console.log("describe: ", electionData.describe);
                 console.log("allowvoter: ", electionData.allowedVoters);
                 console.log("candidate: ", electionData.candidates);
+
+                await res.wait();
+
+                toast.success("Cuộc bầu cử đã được tạo thành công!");
+                await new Promise((resolve) => setTimeout(resolve, 5000));
+
+                router.push("/hoi-nhom-binh-chon");
 
             } catch (error) {
                 console.error("Error creating election:", error);
@@ -153,6 +201,7 @@ export default function CreateElectionTemPlate() {
         <>
             <Header />
             <div className="flex justify-center items-center min-h-screen">
+                <Toaster position="top-right" richColors />
                 <div className="p-8 rounded-xl w-full max-w-2xl border border-gray-700 mt-14 bg-black bg-opacity-65 shadow-xl z-10 backdrop-blur-sm">
                     <h2 className="text-2xl text-center font-bold uppercase mb-4 text-slate-400">Tạo Cuộc Bình Chọn</h2>
                     <div className="max-h-[550px] overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb scrollbar-track p-2">
