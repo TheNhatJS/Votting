@@ -7,6 +7,7 @@ import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { Session } from "inspector/promises";
 import { useSession } from "next-auth/react";
+import { toast, Toaster } from "sonner";
 
 export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
@@ -94,7 +95,8 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
                 const tx = await contract.vote(id, candidate);
                 await tx.wait();
-                alert("Bình chọn thành công!")
+                toast.success("Bình chọn thành công!");
+                fecthElectionDetail();
                 
             }
         } catch (error) {
@@ -153,6 +155,7 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
             <Header />
 
             <div className="flex justify-center items-center min-h-screen">
+                <Toaster position="top-right" richColors />
                 <div className="w-full max-w-5xl p-6">
                     <div className="p-8 w-full rounded-xl mt-16 bg-black bg-opacity-65 shadow-xl z-10 backdrop-blur-sm">
                         {loadingPage ? (
