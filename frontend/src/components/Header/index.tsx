@@ -7,6 +7,7 @@ import { signOut, useSession } from "next-auth/react";
 import detectEthereumProvider from "@metamask/detect-provider";
 import { ethers } from "ethers";
 import ContractABI from "@/data/abi.contract.json";
+import Link from "next/link";
 
 
 export default function Header() {
@@ -80,11 +81,13 @@ export default function Header() {
                         {showMenu && (
                             <div className="absolute left-0 mt-2 w-full bg-white text-black rounded-lg shadow-lg">
                                 {isAdmin && (
+                                    <Link href="/nhuong-quyen-owner">
                                     <button
                                         className="w-full px-4 text-center font-bold py-2 border-b-2 border-gray-700 hover:bg-amber-500 hover:rounded-t-lg transition-all"
                                     >
                                         Nhượng quyền Admin
                                     </button>
+                                    </Link>
                                 )}
                                 <button
                                     className="w-full px-4 text-center font-bold py-2 hover:bg-red-500 hover:text-white hover:rounded-b-lg transition-all"
