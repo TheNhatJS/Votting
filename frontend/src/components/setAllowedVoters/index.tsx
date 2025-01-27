@@ -1,16 +1,21 @@
 "use client"
 import { useRouter } from "next/navigation";
 import Header from "../Header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa6";
 import { toast, Toaster } from "sonner";
 import detectEthereumProvider from "@metamask/detect-provider";
 import { ethers } from "ethers";
 import ContractABI from "@/data/abi.contract.json";
 import { resolve } from "path";
+import { useSession } from "next-auth/react";
 
 export default function SetAllowedVoters({ id }: { id: string }) {
     const router = useRouter()
+
+    const {data: session} = useSession();
+
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const [newVoters, setNewVoters] = useState<string[]>([])
 
@@ -47,6 +52,31 @@ export default function SetAllowedVoters({ id }: { id: string }) {
             ...newVoters.filter((_, i) => i !== index)
         ]);
     };
+
+    useEffect(() => {
+        const checkAdmin = async () => {
+            if (session) {
+                const provider: any = await detectEthereumProvider();
+                if(provider) {
+                    const ethersProvider = await new ethers.BrowserProvider(provider);
+                    const signer = await ethersProvider.getSigner();
+                    const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
+
+                    const owner = await contract.owner();
+
+                    if(owner.toLowerCase() === session.user.id.toLowerCase()) {
+                        setIsAdmin(true);
+                    }
+                    else {
+                        router.push("/hoi-nhom-binh-chon");
+                    }
+                }
+            }
+        }
+
+        checkAdmin();
+        
+    }, [session])
 
     return (
         <>
