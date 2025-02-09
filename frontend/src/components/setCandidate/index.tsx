@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
 import { resolve } from "path";
 import { useSession } from "next-auth/react";
+import Waiting from "../share/Waiting";
 
 type setCandidateData = {
     newCandidate: string[],
@@ -21,6 +22,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
     const router = useRouter();
     const { data: session } = useSession();
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isWaiting, setIsWaiting] = useState(false);
 
     const [NewCandidate, setNewCandidate] = useState<setCandidateData>(
         {
@@ -46,7 +48,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
                     }
                 );
                 //console.log("New image URL: ", NewCandidate.newImageUrl);
-                
+
             } else {
                 console.log(res.message);
             }
@@ -63,6 +65,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
 
     const updateCandidate = async () => {
         try {
+            setIsWaiting(true);
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -80,6 +83,8 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
                 console.log("New candidate img: ", NewCandidate.newImageUrl);
                 console.log("New candidate: ", NewCandidate.newCandidate);
 
+                setIsWaiting(false);
+
                 toast.success("Cập nhật danh sách ứng cử viên thành công");
                 await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -88,6 +93,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
             }
 
         } catch (error) {
+            setIsWaiting(false);
             console.log(error);
         }
 
@@ -122,7 +128,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
         <>
             <Header />
             <div className="flex justify-center items-center min-h-screen">
-                <Toaster position="top-right" richColors/>
+                <Toaster position="top-right" richColors />
                 <div className="p-8 rounded-xl max-w-2xl w-full border border-gray-700 bg-black bg-opacity-65 shadow-xl z-10 backdrop-blur-sm">
                     <h2 className="text-2xl text-center font-bold uppercase mb-6">Cập Nhật Danh Sách Cử Tri</h2>
 
@@ -183,8 +189,14 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
                         onClick={updateCandidate}
                         className="mt-4 py-2 px-10 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 w-full"
                     >
+                        {
+                            isWaiting ? (
+                                <Waiting />
+                            ) : (
+                                <span>Cập nhật</span>
+                            )
+                        }
 
-                        <span>Cập nhật</span>
 
 
                     </button>

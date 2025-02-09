@@ -9,6 +9,7 @@ import { FaTrash } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { uploadFileToIPFS } from "@/app/api/upload/image/route";
 import { toast, Toaster } from "sonner";
+import Waiting from "../share/Waiting";
 
 type ElectionData = {
     name: string;
@@ -24,6 +25,8 @@ export default function CreateElectionTemPlate() {
     const router = useRouter();
     const { data: session } = useSession();
     const [isAdmin, setIsAdmin] = useState(false);
+
+    const [isWaiting, setIsWaiting] = useState(false);
 
     const [electionData, setElectionData] = useState<ElectionData>({
         name: "",
@@ -115,6 +118,7 @@ export default function CreateElectionTemPlate() {
 
     //Tạo cuộc bầu cử
     async function createElection(e: any) {
+        setIsWaiting(true);
         const provider: any = await detectEthereumProvider();
         if (provider) {
             const ethersProvider = new ethers.BrowserProvider(provider);
@@ -123,6 +127,7 @@ export default function CreateElectionTemPlate() {
 
             if (electionData.candidates.length !== electionData.imageUrl.length) {
                 console.error("Candidates and image URLs must match");
+                setIsWaiting(false);
                 return;
             }
 
@@ -148,12 +153,14 @@ export default function CreateElectionTemPlate() {
                 await res.wait();
 
                 toast.success("Cuộc bầu cử đã được tạo thành công!");
+                setIsWaiting(false);
                 await new Promise((resolve) => setTimeout(resolve, 5000));
 
                 router.push("/hoi-nhom-binh-chon");
 
             } catch (error) {
                 console.error("Error creating election:", error);
+                setIsWaiting(false);
             }
         }
     }
@@ -361,7 +368,12 @@ export default function CreateElectionTemPlate() {
                         className="mt-4 w-full max-w-80 ml-[50%] translate-x-[-50%] bg-blue-600 text-white p-2 rounded-md hover:bg-blue-500 transition duration-200"
                         onClick={createElection}
                     >
-                        Tạo cuộc bình chọn
+                        {isWaiting ? (
+                            <Waiting />
+                        ) : (
+                            "Tạo cuộc bình chọn"
+                        )}
+                        
                     </button>
                 </div>
             </div>

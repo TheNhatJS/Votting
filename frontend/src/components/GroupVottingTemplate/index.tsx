@@ -12,6 +12,7 @@ import getIpfsUrlFromPinata from "@/app/api/upload/image/utils";
 import { time } from "console";
 import { toast, Toaster } from "sonner";
 import { resolve } from "path";
+import Waiting from "../share/Waiting";
 
 export default function Home() {
     const { data: session } = useSession();
@@ -23,6 +24,8 @@ export default function Home() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [electionToDelete, setElectionToDelete] = useState<string | null>(null);
+
+    const [isWaiting, setIsWaiting] = useState(false);
 
 
     type Elections = {
@@ -75,6 +78,7 @@ export default function Home() {
         if (!electionToDelete) return;
 
         try {
+            setIsWaiting(true);
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -100,6 +104,8 @@ export default function Home() {
 
                 setAllElection(formattedElections.reverse());
 
+                setIsWaiting(false);
+
                 setIsModalOpen(false);
 
                 toast.success("Xóa cuộc bầu cử thành công!");
@@ -107,6 +113,7 @@ export default function Home() {
             }
         } catch (error) {
             console.error("Error deleting election:", error);
+            setIsWaiting(false);
         }
     }
 
@@ -192,18 +199,30 @@ export default function Home() {
                         <div className="bg-slate-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
                             <h3 className="text-xl font-semibold mb-4 text-center">Bạn chắc chắn muốn xóa cuộc bầu cử này?</h3>
                             <div className="flex justify-center items-center">
-                                <>
-                                    <button
-                                        onClick={cofirmDeleteElection}
-                                        className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-200 mr-16">
-                                        Yes
-                                    </button>
-                                    <button
-                                        onClick={cancelDeleteElection}
-                                        className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200">
-                                        No
-                                    </button>
-                                </>
+                                {
+                                    isWaiting ? (
+                                        <button
+                                            onClick={cofirmDeleteElection}
+                                            disabled
+                                            className="bg-green-500 text-white py-2 px-16 rounded-lg hover:bg-green-600 transition duration-200">
+                                            <Waiting />
+                                        </button>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={cofirmDeleteElection}
+                                                className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-200 mr-16">
+                                                Yes
+                                            </button>
+                                            <button
+                                                onClick={cancelDeleteElection}
+                                                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200">
+                                                No
+                                            </button>
+                                        </>
+                                    )
+                                }
+
                             </div>
                         </div>
                     </div>
