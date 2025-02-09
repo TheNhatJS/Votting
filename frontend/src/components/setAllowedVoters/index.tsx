@@ -9,40 +9,45 @@ import { ethers } from "ethers";
 import ContractABI from "@/data/abi.contract.json";
 import { resolve } from "path";
 import { useSession } from "next-auth/react";
+import Waiting from "../share/Waiting";
 
 export default function SetAllowedVoters({ id }: { id: string }) {
     const router = useRouter()
 
-    const {data: session} = useSession();
+    const { data: session } = useSession();
 
     const [isAdmin, setIsAdmin] = useState(false);
 
     const [newVoters, setNewVoters] = useState<string[]>([])
 
+    const [isWaiting, setIsWaiting] = useState(false);
+
     const updateVoters = async () => {
         if (newVoters.length === 0) {
             return toast.error("Danh sách người tham gia bầu cử không được để trống");
         }
-        
+
         console.log(newVoters);
-        
+
         try {
+            setIsWaiting(true);
             const provider: any = await detectEthereumProvider();
-            if(provider) {
+            if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
                 const signer = await ethersProvider.getSigner();
                 const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
 
                 const ts = await contract.setAllowedVoters(id, newVoters);
                 await ts.wait();
-
+                setIsWaiting(false);
                 toast.success("Cập nhật danh sách người tham gia bầu cử thành công");
-                
+
             }
-        }catch (error) {
+        } catch (error) {
             console.log("Error: ", error);
+            setIsWaiting(false);
         }
-        
+
         await new Promise((resolve) => setTimeout(resolve, 3000));
         router.push("/hoi-nhom-binh-chon");
     }
@@ -57,14 +62,14 @@ export default function SetAllowedVoters({ id }: { id: string }) {
         const checkAdmin = async () => {
             if (session) {
                 const provider: any = await detectEthereumProvider();
-                if(provider) {
+                if (provider) {
                     const ethersProvider = await new ethers.BrowserProvider(provider);
                     const signer = await ethersProvider.getSigner();
                     const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
 
                     const owner = await contract.owner();
 
-                    if(owner.toLowerCase() === session.user.id.toLowerCase()) {
+                    if (owner.toLowerCase() === session.user.id.toLowerCase()) {
                         setIsAdmin(true);
                     }
                     else {
@@ -75,14 +80,14 @@ export default function SetAllowedVoters({ id }: { id: string }) {
         }
 
         checkAdmin();
-        
+
     }, [session])
 
     return (
         <>
             <Header />
             <div className="flex justify-center items-center min-h-screen">
-                <Toaster  position="top-right" richColors/>
+                <Toaster position="top-right" richColors />
                 <div className="p-8 rounded-xl max-w-2xl w-full border border-gray-700 bg-black bg-opacity-65 shadow-xl z-10 backdrop-blur-sm">
                     <h2 className="text-2xl text-center font-bold uppercase mb-6">Cập Nhật Danh Sách Địa Chỉ Bầu Cử</h2>
                     <div className="mb-4">
@@ -125,14 +130,17 @@ export default function SetAllowedVoters({ id }: { id: string }) {
                         </div>
 
                         <button
-                        onClick={updateVoters}
-                        className="mt-4 py-2 px-10 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 w-full"
-                    >
-
-                        <span>Cập nhật</span>
-
-
-                    </button>
+                            onClick={updateVoters}
+                            className="mt-4 py-2 px-10 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 w-full"
+                        >
+                            {
+                                isWaiting ? (
+                                    <Waiting />
+                                ) : (
+                                    <span>Cập nhật</span>
+                                )
+                            }
+                        </button>
                     </div>
                 </div>
             </div>

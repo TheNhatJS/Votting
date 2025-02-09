@@ -8,15 +8,18 @@ import { useEffect, useState } from "react";
 import detectEthereumProvider from "@metamask/detect-provider";
 import { ethers } from "ethers";
 import { toast, Toaster } from "sonner";
+import Waiting from "../share/Waiting";
 
 export default function TranferOwner() {
     const router = useRouter();
     const { data: session } = useSession();
     const [isAdmin, setIsAdmin] = useState(false);
     const [newOwner, setNewOwner] = useState<string>("");
+    const [isWaiting, setIsWaiting] = useState(false);
 
     const handleTransferOwner = async () => {
         try {
+            setIsWaiting(true);
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -25,13 +28,14 @@ export default function TranferOwner() {
 
                 const ts = await contract.transferOwner(newOwner);
                 await ts.wait();
-
+                setIsWaiting(false);
                 toast.success("Chuyển quyền quản lí thành công");
                 await new Promise((resolve) => setTimeout(resolve, 3000));
                 router.push("/hoi-nhom-binh-chon");
             }
         } catch (error) {
             console.error("Error transfering owner", error);
+            setIsWaiting(false);
         }
     }
 
@@ -80,7 +84,13 @@ export default function TranferOwner() {
                             onClick={handleTransferOwner}
                             className="mt-4 py-2 px-10 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 w-full"
                         >
-                            <span>Cập nhật</span>
+                            {
+                                isWaiting ? (
+                                    <Waiting />
+                                ) : (
+                                    <span>Chuyển quyền</span>
+                                )
+                            }
                         </button>
                     </div>
                 </div>

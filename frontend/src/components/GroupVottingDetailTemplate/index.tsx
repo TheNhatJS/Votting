@@ -8,10 +8,12 @@ import { useEffect, useState } from "react";
 import { Session } from "inspector/promises";
 import { useSession } from "next-auth/react";
 import { toast, Toaster } from "sonner";
+import Waiting from "../share/Waiting";
 
 export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
     const { data: session } = useSession();
+    const [isWaiting, setIsWaiting] = useState(false);
 
     type ElectionDetail = {
         name: string,
@@ -86,8 +88,9 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
     const vote = async (candidate: string) => {
         try {
+            setIsWaiting(true);
             const provider: any = await detectEthereumProvider();
-            
+
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
                 const signer = await ethersProvider.getSigner();
@@ -95,12 +98,15 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
                 const tx = await contract.vote(id, candidate);
                 await tx.wait();
+
+                setIsWaiting(false);
                 toast.success("Bình chọn thành công!");
                 fecthElectionDetail();
-                
+
             }
         } catch (error) {
             console.error(error)
+            setIsWaiting(false);
         }
     }
 
@@ -195,7 +201,7 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
                                 <p className="text-lg mb-4">Mô tả: {electionDetail?.description}</p>
 
-                                
+
                                 <img
                                     src={electionDetail?.imageURLElection}
                                     alt="Ảnh cuộc bầu cử"
@@ -243,19 +249,19 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
                                                         Math.floor(Date.now() / 1000) > Number(electionDetail?.endtime) || electionDetail?.hasVoted || !isAllowedToVote()
                                                     }
                                                 >
-
-
                                                     {
-                                                        Math.floor(Date.now() / 1000) > Number(electionDetail?.endtime)
-                                                            ? "Cuộc bầu cử đã kết thúc"
-                                                            : electionDetail?.hasVoted
-                                                                ? "Bạn đã bình chọn"
-                                                                : !isAllowedToVote()
-                                                                    ? "Bạn không có quyền bình chọn"
-                                                                    : "Bình chọn"
+                                                        isWaiting ? (
+                                                            <Waiting />
+                                                        ) : (
+                                                            Math.floor(Date.now() / 1000) > Number(electionDetail?.endtime)
+                                                                ? "Cuộc bầu cử đã kết thúc"
+                                                                : electionDetail?.hasVoted
+                                                                    ? "Bạn đã bình chọn"
+                                                                    : !isAllowedToVote()
+                                                                        ? "Bạn không có quyền bình chọn"
+                                                                        : "Bình chọn"
+                                                        )
                                                     }
-
-
                                                 </button>
 
                                             </div>
