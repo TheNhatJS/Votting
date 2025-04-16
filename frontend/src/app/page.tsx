@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import LoadingSpinner from "../components/share/LoadingSpiner"
-import { useContext, useState } from "react";
-import Link from "next/link";
+import LoadingSpinner from "../components/share/LoadingSpiner";
+import { useState } from "react";
 import detectEthereumProvider from "@metamask/detect-provider";
-import { Toaster, toast } from 'sonner'
-import { BrowserProvider } from "ethers";
+import { Toaster, toast } from "sonner";
+import { BrowserProvider, Eip1193Provider } from "ethers";
 import { useRouter } from "next/navigation";
 
 import { signIn } from "next-auth/react";
@@ -15,10 +14,9 @@ export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-
   const connectWallet = async () => {
-    const provider: any = await detectEthereumProvider();
-    if (provider) {
+    const provider = (await detectEthereumProvider()) as Eip1193Provider | null;
+    if (provider && typeof provider.request === "function") {
       try {
         setIsLoading(true);
         const ethersProvider = new BrowserProvider(provider);
@@ -41,25 +39,23 @@ export default function Home() {
         }
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
-
-
       } catch (error) {
+        console.error("Lỗi khi đăng nhập:", error);
         toast.error("Lỗi khi đăng nhập!");
+      } finally {
+        setIsLoading(false);
+        router.push("./hoi-nhom-binh-chon");
       }
-      setIsLoading(false);
-      router.push('./hoi-nhom-binh-chon');
-
+    } else {
+      toast.error("Không tìm thấy nhà cung cấp Ethereum!");
     }
-  }
-
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen">
       <Toaster position="top-right" richColors />
       <div className="p-8 rounded-xl max-w-md w-full border border-gray-700 bg-black bg-opacity-50 shadow-xl z-10 backdrop-blur-sm">
-        <h2 className="text-2xl text-center font-bold mb-6">
-          ĐĂNG NHẬP
-        </h2>
+        <h2 className="text-2xl text-center font-bold mb-6">ĐĂNG NHẬP</h2>
         <div className="space-y-4">
           <button
             onClick={connectWallet}
@@ -68,7 +64,6 @@ export default function Home() {
             {isLoading ? (
               <LoadingSpinner />
             ) : (
-
               <>
                 <Image
                   priority

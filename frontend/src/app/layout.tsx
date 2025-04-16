@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import { WalletContextProvider } from "@/context/wallet";
-import { SessionProvider } from "next-auth/react";
-import { ReactNode } from "react";
+
 import ProviderLayout from "@/components/layouts/ProviderLayout";
 
 const inter = Inter({ subsets: ["latin"] });
