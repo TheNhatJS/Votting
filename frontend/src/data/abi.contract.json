@@ -1,0 +1,474 @@
+{
+    "address": "0xf5E543c9eC84A7feD4E3c04A15040f16F3cF5587",
+    "abi": [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "electionID",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "endTime",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ElectionCreated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "electionID",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ElectionDeleted",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "electionID",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "voter",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "candidate",
+                    "type": "string"
+                }
+            ],
+            "name": "VoteCasted",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "durationInMinutes",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string[]",
+                    "name": "candidates",
+                    "type": "string[]"
+                },
+                {
+                    "internalType": "string[]",
+                    "name": "imageUrl",
+                    "type": "string[]"
+                },
+                {
+                    "internalType": "string",
+                    "name": "imageUrlElection",
+                    "type": "string"
+                },
+                {
+                    "internalType": "address[]",
+                    "name": "allowedVoters",
+                    "type": "address[]"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_describe",
+                    "type": "string"
+                }
+            ],
+            "name": "createElection",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "electionId",
+                    "type": "uint256"
+                }
+            ],
+            "name": "deleteElection",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "electionId",
+                    "type": "uint256"
+                }
+            ],
+            "name": "detailElection",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "string",
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "describe",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "endTime",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "hasVote",
+                            "type": "bool"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "winnerName",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "highestVotes",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address[]",
+                            "name": "allowedVoters",
+                            "type": "address[]"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "imageURLElection",
+                            "type": "string"
+                        }
+                    ],
+                    "internalType": "struct VoteElection.DetailElection",
+                    "name": "",
+                    "type": "tuple"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "electionID",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "electionIDs",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "elections",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "endTime",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "imageUrlElection",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "describe",
+                    "type": "string"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "exists",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "string",
+                    "name": "winner",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "highestVotes",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getAllElections",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "idElection",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "imageUrlElection",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "describe",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "endTime",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string[]",
+                            "name": "candidates",
+                            "type": "string[]"
+                        }
+                    ],
+                    "internalType": "struct VoteElection.DataElection[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "electionId",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getCandidateVotes",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "string",
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "votes",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "imageUrl",
+                            "type": "string"
+                        }
+                    ],
+                    "internalType": "struct VoteElection.CandidateVotes[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "electionId",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getElectionWinner",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_electionID",
+                    "type": "uint256"
+                }
+            ],
+            "name": "registerVote",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_electionID",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address[]",
+                    "name": "newAllowedVoters",
+                    "type": "address[]"
+                }
+            ],
+            "name": "setAllowedVoters",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "electionId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string[]",
+                    "name": "newCandidates",
+                    "type": "string[]"
+                },
+                {
+                    "internalType": "string[]",
+                    "name": "newImageUrl",
+                    "type": "string[]"
+                }
+            ],
+            "name": "setCandidates",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwner",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "electionId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "candidate",
+                    "type": "string"
+                }
+            ],
+            "name": "vote",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ]
+}
