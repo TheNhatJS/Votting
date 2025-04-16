@@ -11,7 +11,7 @@ import Link from "next/link";
 
 
 export default function Header() {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const router = useRouter();
     const [isAdmin, setAdmin] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -19,6 +19,7 @@ export default function Header() {
     useEffect(() => {
         const checkAdmin = async () => {
             if (session?.user?.id) {
+                //@typescript-eslint/no-explicit-any
                 const provider: any = await detectEthereumProvider();
 
                 if (provider) {

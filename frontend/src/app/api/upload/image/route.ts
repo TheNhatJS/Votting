@@ -1,12 +1,15 @@
 "use server";
 
 import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 
 const jwt = process.env.JWT;
 
-//UpLoad Image lên Pinata và trả về URL của Image trên IPFS
-export const uploadFileToIPFS = async (data: FormData) => {
-    const file = data.get('file') as File | null;
+// Hàm tiện ích để upload file lên Pinata
+const uploadFileToIPFS = async (data: FormData): Promise<
+    { success: true; pinataURL: string } | { success: false; message: string }
+> => {
+    const file = data.get("file") as File | null;
     if (file) {
         const pinataMetadata = JSON.stringify({
             name: file.name,
@@ -19,7 +22,6 @@ export const uploadFileToIPFS = async (data: FormData) => {
         data.append("pinataOptions", pinataOptions);
 
         try {
-            // Sử dụng kiểu dữ liệu an toàn hơn thay vì `any`
             const boundary = (data as unknown as { _boundary: string })._boundary;
 
             const res = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", data, {
@@ -34,9 +36,8 @@ export const uploadFileToIPFS = async (data: FormData) => {
                 success: true,
                 pinataURL: "https://gateway.pinata.cloud/ipfs/" + res.data.IpfsHash,
             };
-
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return {
                 success: false,
                 message: (error as Error).message,
@@ -49,3 +50,20 @@ export const uploadFileToIPFS = async (data: FormData) => {
         };
     }
 };
+
+// API route handler cho phương thức POST
+export async function POST(req: NextRequest) {
+    try {
+        const formData = await req.formData();
+        const result = await uploadFileToIPFS(formData);
+
+        if (result.success) {
+            return NextResponse.json({ success: true, pinataURL: result.pinataURL });
+        } else {
+            return NextResponse.json({ success: false, message: result.message }, { status: 400 });
+        }
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
+    }
+}

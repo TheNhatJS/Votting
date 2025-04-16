@@ -2,21 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Header from "../Header";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import detectEthereumProvider from "@metamask/detect-provider";
 import ContractABI from "@/data/abi.contract.json";
 import { ethers } from "ethers";
 import Link from "next/link";
 import getIpfsUrlFromPinata from "@/app/api/upload/image/utils";
-import { time } from "console";
 import { toast, Toaster } from "sonner";
-import { resolve } from "path";
 import Waiting from "../share/Waiting";
 
 export default function Home() {
     const { data: session } = useSession();
-    const router = useRouter();
     const [isAdmin, setAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
@@ -82,6 +78,7 @@ export default function Home() {
     const registerVote = async (electionId: string) => {
         setWaitingElectionId(electionId);
         try {
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -93,6 +90,7 @@ export default function Home() {
 
                 toast.success("Đăng ký quyền bình chọn thành công!");
             }
+        //@typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("Error registering vote:", error);
 
@@ -110,6 +108,7 @@ export default function Home() {
 
         try {
             setIsWaiting(true);
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -122,6 +121,7 @@ export default function Home() {
 
                 const elections: Elections[] = await contract.getAllElections();
 
+                //@typescript-eslint/no-explicit-any
                 const formattedElections: Elections[] = elections.map((election: any) => ({
                     id: election.idElection,
                     name: election.name,
