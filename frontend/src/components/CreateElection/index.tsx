@@ -24,7 +24,6 @@ type ElectionData = {
 export default function CreateElectionTemPlate() {
     const router = useRouter();
     const { data: session } = useSession();
-    const [isAdmin, setIsAdmin] = useState(false);
 
     const [isWaiting, setIsWaiting] = useState(false);
 
@@ -62,15 +61,15 @@ export default function CreateElectionTemPlate() {
         if (file) {
             const data = new FormData();
             data.set("file", file);
-            const res: any = await uploadFileToIPFS(data);
-            console.log("res: ", res.pinataURL);
-            if (res.success) {
+
+            const res = await uploadFileToIPFS(data);
+            if (res.success && res.pinataURL) {
                 setElectionData((prevData) => ({
                     ...prevData,
                     imageUrlElection: res.pinataURL,
                 }));
             } else {
-                console.log(res.message);
+                console.log(res.message || "Unknown error");
             }
         }
     }
@@ -99,9 +98,9 @@ export default function CreateElectionTemPlate() {
         if (file) {
             const data = new FormData();
             data.set("file", file);
-            const res: any = await uploadFileToIPFS(data);
-            console.log("res: ", res.pinataURL);
-            if (res.success) {
+
+            const res = await uploadFileToIPFS(data);
+            if (res.success && res.pinataURL) {
                 setElectionData((prevData) => {
                     const newImageUrl = [...prevData.imageUrl];
                     newImageUrl[index] = res.pinataURL;
@@ -111,13 +110,13 @@ export default function CreateElectionTemPlate() {
                     };
                 });
             } else {
-                console.log(res.message);
+                console.log(res.message || "Unknown error");
             }
         }
     }
 
     //Tạo cuộc bầu cử
-    async function createElection(e: any) {
+    async function createElection() {
         setIsWaiting(true);
         const provider: any = await detectEthereumProvider();
         if (provider) {
@@ -192,9 +191,7 @@ export default function CreateElectionTemPlate() {
 
                     const owner = await contract.owner();
 
-                    if (owner.toLowerCase() === session.user.id.toLowerCase()) {
-                        setIsAdmin(true);
-                    } else {
+                    if (owner.toLowerCase() !== session.user.id.toLowerCase()) {
                         router.push("/hoi-nhom-binh-chon");
                     }
                 }
@@ -202,7 +199,7 @@ export default function CreateElectionTemPlate() {
         };
 
         checkAdmin();
-    }, [session]);
+    }, [session, router]);
 
     return (
         <>
@@ -373,7 +370,7 @@ export default function CreateElectionTemPlate() {
                         ) : (
                             "Tạo cuộc bình chọn"
                         )}
-                        
+
                     </button>
                 </div>
             </div>

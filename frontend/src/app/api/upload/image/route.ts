@@ -19,10 +19,13 @@ export const uploadFileToIPFS = async (data: FormData) => {
         data.append("pinataOptions", pinataOptions);
 
         try {
+            // Sử dụng kiểu dữ liệu an toàn hơn thay vì `any`
+            const boundary = (data as unknown as { _boundary: string })._boundary;
+
             const res = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", data, {
                 maxBodyLength: Infinity,
                 headers: {
-                    "Content-Type": `multipart/form-data; boundary=${(data as any)._boundary}`,
+                    "Content-Type": `multipart/form-data; boundary=${boundary}`,
                     Authorization: `Bearer ${jwt}`,
                 },
             });
