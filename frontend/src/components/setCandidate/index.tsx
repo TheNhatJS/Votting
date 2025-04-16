@@ -66,6 +66,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
     const updateCandidate = async () => {
         try {
             setIsWaiting(true);
+            //Phát hiện trình cung cấp Ethereum (Ethereum Provider) trong trình duyệt, thường là MetaMask.
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);

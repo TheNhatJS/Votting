@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-contract Vote {
+contract VoteElection {
     struct Election {
         string name;
         uint256 endTime;
@@ -50,8 +50,16 @@ contract Vote {
 
     uint256[] public electionIDs;
 
-    event ElectionCreated(uint256 indexed electionID, string name, uint256 endTime);
-    event VoteCasted(uint256 indexed electionID, address indexed voter, string candidate);
+    event ElectionCreated(
+        uint256 indexed electionID,
+        string name,
+        uint256 endTime
+    );
+    event VoteCasted(
+        uint256 indexed electionID,
+        address indexed voter,
+        string candidate
+    );
     event ElectionDeleted(uint256 indexed electionID);
 
     modifier onlyOwner() {
@@ -102,6 +110,7 @@ contract Vote {
         newElection.imageUrl = imageUrl;
         newElection.imageUrlElection = imageUrlElection;
         newElection.describe = _describe;
+        newElection.winner = "Final result draw";
 
         for (uint256 i = 0; i < allowedVoters.length; i++) {
             newElection.allowedVoters[allowedVoters[i]] = true;
@@ -111,6 +120,21 @@ contract Vote {
         electionIDs.push(electionID);
 
         emit ElectionCreated(electionID, name, newElection.endTime);
+    }
+
+    function registerVote(uint256 _electionID)
+        external
+        electionExists(_electionID)
+    {
+        Election storage election = elections[_electionID];
+
+        require(block.timestamp <= election.endTime, "Election has ended");
+        require(!election.hasVoted[msg.sender], "Voter has already voted");
+        require(!election.allowedVoters[msg.sender], "Voter already registered");
+        require(msg.sender.balance >= 0.03 ether, "Minimum 0.03 ETH required");
+
+        election.allowedVoters[msg.sender] = true;
+        election.allowedVotersArray.push(msg.sender);
     }
 
     function setCandidates(
@@ -156,10 +180,10 @@ contract Vote {
         }
     }
 
-    function vote(
-        uint256 electionId,
-        string memory candidate
-    ) public electionExists(electionId) {
+    function vote(uint256 electionId, string memory candidate)
+        public
+        electionExists(electionId)
+    {
         Election storage election = elections[electionId];
 
         require(block.timestamp <= election.endTime, "Election has ended");
@@ -180,23 +204,27 @@ contract Vote {
             election.highestVotes = election.votes[candidate];
             election.winner = candidate;
         } else if (election.votes[candidate] == election.highestVotes) {
-            election.winner = ""; // Tie
+            election.winner = "Final result draw"; // Tie
         }
 
         emit VoteCasted(electionId, msg.sender, candidate);
     }
 
-    function getElectionWinner(
-        uint256 electionId
-    ) public view electionExists(electionId) returns (string memory, uint256) {
+    function getElectionWinner(uint256 electionId)
+        public
+        view
+        electionExists(electionId)
+        returns (string memory, uint256)
+    {
         Election storage election = elections[electionId];
         return (election.winner, election.highestVotes);
     }
 
-    function isCandidate(
-        string memory candidate,
-        string[] memory candidates
-    ) internal pure returns (bool) {
+    function isCandidate(string memory candidate, string[] memory candidates)
+        internal
+        pure
+        returns (bool)
+    {
         for (uint256 i = 0; i < candidates.length; i++) {
             if (
                 keccak256(abi.encodePacked(candidates[i])) ==
@@ -208,9 +236,11 @@ contract Vote {
         return false;
     }
 
-    function deleteElection(
-        uint256 electionId
-    ) public onlyOwner electionExists(electionId) {
+    function deleteElection(uint256 electionId)
+        public
+        onlyOwner
+        electionExists(electionId)
+    {
         Election storage election = elections[electionId];
 
         for (uint256 i = 0; i < election.allowedVotersArray.length; i++) {
@@ -249,11 +279,16 @@ contract Vote {
         return result;
     }
 
-    function getCandidateVotes(
-        uint256 electionId
-    ) public view electionExists(electionId) returns (CandidateVotes[] memory) {
+    function getCandidateVotes(uint256 electionId)
+        public
+        view
+        electionExists(electionId)
+        returns (CandidateVotes[] memory)
+    {
         Election storage election = elections[electionId];
-        CandidateVotes[] memory candidateVotes = new CandidateVotes[](election.candidates.length);
+        CandidateVotes[] memory candidateVotes = new CandidateVotes[](
+            election.candidates.length
+        );
 
         for (uint256 i = 0; i < election.candidates.length; i++) {
             string memory candidate = election.candidates[i];
@@ -266,7 +301,11 @@ contract Vote {
         return candidateVotes;
     }
 
-    function detailElection (uint256 electionId) public view returns (DetailElection memory){
+    function detailElection(uint256 electionId)
+        public
+        view
+        returns (DetailElection memory)
+    {
         Election storage election = elections[electionId];
         DetailElection memory detailE = DetailElection(
             election.name,

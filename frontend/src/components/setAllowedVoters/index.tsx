@@ -22,6 +22,27 @@ export default function SetAllowedVoters({ id }: { id: string }) {
 
     const [isWaiting, setIsWaiting] = useState(false);
 
+
+    const fetchAllowedVoters = async () => {
+        try {
+            const provider: any = await detectEthereumProvider();
+            if (provider) {
+                const ethersProvider = new ethers.BrowserProvider(provider);
+                const signer = await ethersProvider.getSigner();
+                const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
+    
+                // Gọi hàm detailElection để lấy thông tin chi tiết của cuộc bầu cử
+                const electionDetails = await contract.detailElection(id);
+    
+                // Lấy danh sách allowedVoters từ kết quả trả về
+                setNewVoters(electionDetails.allowedVoters);
+            }
+        } catch (error) {
+            console.error("Error fetching allowed voters:", error);
+            toast.error("Không thể tải danh sách địa chỉ được phép bầu cử.");
+        }
+    };
+
     const updateVoters = async () => {
         if (newVoters.length === 0) {
             return toast.error("Danh sách người tham gia bầu cử không được để trống");
@@ -80,7 +101,7 @@ export default function SetAllowedVoters({ id }: { id: string }) {
         }
 
         checkAdmin();
-
+        fetchAllowedVoters();
     }, [session])
 
     return (

@@ -20,8 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} text-[#EAECEF] bg-[#202328]`}>
+    <html lang="en" suppressHydrationWarning={true}>
+      <body
+        className={`${inter.className} text-[#EAECEF] bg-[#202328]`}
+      >
         <div className="relative bg-custom-image bg-no-repeat bg-center bg-cover bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/20"></div>
           <ProviderLayout>{children}</ProviderLayout>

@@ -42,6 +42,8 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
+    const [waitingNameVote, setWaitingNameVote] = useState<string | null>(null);
+
     const fecthElectionDetail = async () => {
         try {
             const provider: any = await detectEthereumProvider();
@@ -87,8 +89,9 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
     }
 
     const vote = async (candidate: string) => {
+        setWaitingNameVote(candidate);
         try {
-            setIsWaiting(true);
+            
             const provider: any = await detectEthereumProvider();
 
             if (provider) {
@@ -99,14 +102,16 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
                 const tx = await contract.vote(id, candidate);
                 await tx.wait();
 
-                setIsWaiting(false);
+                
                 toast.success("Bình chọn thành công!");
                 fecthElectionDetail();
 
             }
         } catch (error) {
             console.error(error)
-            setIsWaiting(false);
+            
+        } finally {
+            setWaitingNameVote(null);
         }
     }
 
@@ -190,7 +195,7 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
                                         </p>
                                     ) : (
                                         <p className="text-lg font-medium text-red-600">
-                                            ⏳ Cuộc bầu cử đã kết thúc!
+                                            ⏳ Cuộc bình chọn đã kết thúc!
                                         </p>
                                     )}
                                 </div>
@@ -240,7 +245,8 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
                                             <div className="flex-shrink-0">
                                                 <button
                                                     onClick={() => vote(candidate.name)}
-                                                    className={`py-2 px-6 rounded font-bold text-white 
+                                                    className={`py-2 px-6 w-60
+                                                         rounded font-bold text-white 
                                                         ${Math.floor(Date.now() / 1000) > Number(electionDetail?.endtime) || electionDetail?.hasVoted || !isAllowedToVote()
                                                             ? "bg-gray-500 cursor-not-allowed"
                                                             : "bg-cyan-600 hover:bg-cyan-400"
@@ -250,11 +256,11 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
                                                     }
                                                 >
                                                     {
-                                                        isWaiting ? (
+                                                        waitingNameVote === candidate.name ? (
                                                             <Waiting />
                                                         ) : (
                                                             Math.floor(Date.now() / 1000) > Number(electionDetail?.endtime)
-                                                                ? "Cuộc bầu cử đã kết thúc"
+                                                                ? "Cuộc bình chọn đã kết thúc"
                                                                 : electionDetail?.hasVoted
                                                                     ? "Bạn đã bình chọn"
                                                                     : !isAllowedToVote()

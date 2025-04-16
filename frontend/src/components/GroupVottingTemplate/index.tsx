@@ -27,6 +27,11 @@ export default function Home() {
 
     const [isWaiting, setIsWaiting] = useState(false);
 
+    const [waitingElectionId, setWaitingElectionId] = useState<string | null>(null);
+
+    const [searchTerm, setSearchTerm] = useState(""); // State để lưu giá trị tìm kiếm
+
+    const [filteredElections, setFilteredElections] = useState<Elections[]>([]); // State để lưu danh sách đã lọc
 
     type Elections = {
         id: string,
@@ -74,6 +79,32 @@ export default function Home() {
         setIsModalOpen(true);
     }
 
+    const registerVote = async (electionId: string) => {
+        setWaitingElectionId(electionId);
+        try {
+            const provider: any = await detectEthereumProvider();
+            if (provider) {
+                const ethersProvider = new ethers.BrowserProvider(provider);
+                const signer = await ethersProvider.getSigner();
+                const contract = new ethers.Contract(ContractABI.address, ContractABI.abi, signer);
+
+                const registerE = await contract.registerVote(electionId);
+                await registerE.wait();
+
+                toast.success("Đăng ký quyền bình chọn thành công!");
+            }
+        } catch (error: any) {
+            console.error("Error registering vote:", error);
+
+            // Trích xuất thông báo lỗi từ smart contract
+            const errorMessage = error.reason || error.data?.message || "Đăng ký quyền bầu cử thất bại!";
+            toast.error(errorMessage);
+
+        } finally {
+            setWaitingElectionId(null); // Reset the waiting state
+        }
+    }
+
     const cofirmDeleteElection = async () => {
         if (!electionToDelete) return;
 
@@ -108,7 +139,7 @@ export default function Home() {
 
                 setIsModalOpen(false);
 
-                toast.success("Xóa cuộc bầu cử thành công!");
+                toast.success("Xóa cuộc bình chọn thành công!");
 
             }
         } catch (error) {
@@ -189,6 +220,25 @@ export default function Home() {
         checkAdmin();
     }, [session])
 
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.toLowerCase();
+        setSearchTerm(value);
+
+        // Lọc danh sách cuộc bầu cử dựa trên tên
+        const filtered = getAllElection.filter((election) =>
+            election.name.toLowerCase().includes(value)
+        );
+        setFilteredElections(filtered);
+    };
+
+    useEffect(() => {
+        // Khi không có giá trị tìm kiếm, hiển thị toàn bộ danh sách
+        if (searchTerm === "") {
+            setFilteredElections(getAllElection);
+        }
+    }, [searchTerm, getAllElection]);
+
     return (
         <>
             <Header />
@@ -240,17 +290,28 @@ export default function Home() {
                         )}
                     </div>
 
+                    {/* Ô nhập liệu tìm kiếm */}
+                    <div className="mb-4 text-center">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm cuộc bầu cử..."
+                            value={searchTerm}
+                            onChange={handleSearch}
+                            className="p-2 border rounded-md w-1/2 text-black"
+                        />
+                    </div>
+
                     {loading ? (
                         <p className="text-center">Đang tải danh sách cuộc bầu cử...</p>
                     ) : (
                         <>
 
-                            {getAllElection.length === 0 ? (
+                            {filteredElections.length === 0 ? (
                                 <p className="text-center">Chưa có cuộc bầu cử nào!</p>
                             ) : (
                                 <div className="h-[32rem] overflow-y-auto  rounded-lg scroll-smooth scrollbar-thin scrollbar-thumb scrollbar-track">
                                     <ul className="space-y-4 rounded-lg ">
-                                        {getAllElection.map((election, index) => (
+                                        {filteredElections.map((election, index) => (
                                             <li key={election.id} className="p-4 border bg-slate-800 bg-opacity-70 backdrop-blur-sm border-gray-700 rounded-lg transition duration-300">
                                                 <h3 className="text-lg font-semibold">{index + 1}. {election.name}</h3>
                                                 <div className="flex justify-between items-center">
@@ -285,6 +346,24 @@ export default function Home() {
                                                                 Tham gia bình chọn
                                                             </button>
                                                         </Link>
+
+                                                        <button
+                                                            disabled={timeLeft[election.id] === 0}
+                                                            onClick={() => registerVote(election.id)}
+                                                            className={`opacity-70 mt-2 py-2 px-4 w-60 bg-[#e75bb3] text-white rounded-lg  transition duration-200
+                                                                ${timeLeft[election.id] === 0 ? "cursor-not-allowed" : "hover:bg-[#e75bb3] hover:opacity-100"}`}
+                                                        >
+
+                                                            {
+                                                                waitingElectionId === election.id ?
+                                                                    (
+                                                                        <Waiting />
+                                                                    ) : (
+                                                                        <span>Đăng ký bình chọn</span>
+                                                                    )
+                                                            }
+
+                                                        </button>
                                                         {isAdmin && (
                                                             <>
                                                                 <Link href={`/sua-cu-tri/${election.id}`} title={election.name}>

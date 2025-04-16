@@ -1,5 +1,5 @@
 {
-    "address": "0xeA64C2700BA6d2E32e86DC32f455BebdDD0ae33D",
+    "address": "0xf5E543c9eC84A7feD4E3c04A15040f16F3cF5587",
     "abi": [
         {
             "inputs": [],
@@ -178,7 +178,7 @@
                             "type": "string"
                         }
                     ],
-                    "internalType": "struct Vote.DetailElection",
+                    "internalType": "struct VoteElection.DetailElection",
                     "name": "",
                     "type": "tuple"
                 }
@@ -304,7 +304,7 @@
                             "type": "string[]"
                         }
                     ],
-                    "internalType": "struct Vote.DataElection[]",
+                    "internalType": "struct VoteElection.DataElection[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -340,7 +340,7 @@
                             "type": "string"
                         }
                     ],
-                    "internalType": "struct Vote.CandidateVotes[]",
+                    "internalType": "struct VoteElection.CandidateVotes[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -383,6 +383,19 @@
                 }
             ],
             "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_electionID",
+                    "type": "uint256"
+                }
+            ],
+            "name": "registerVote",
+            "outputs": [],
+            "stateMutability": "nonpayable",
             "type": "function"
         },
         {
