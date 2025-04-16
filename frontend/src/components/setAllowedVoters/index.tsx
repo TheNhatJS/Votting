@@ -7,7 +7,6 @@ import { toast, Toaster } from "sonner";
 import detectEthereumProvider from "@metamask/detect-provider";
 import { ethers } from "ethers";
 import ContractABI from "@/data/abi.contract.json";
-import { resolve } from "path";
 import { useSession } from "next-auth/react";
 import Waiting from "../share/Waiting";
 
@@ -16,8 +15,6 @@ export default function SetAllowedVoters({ id }: { id: string }) {
 
     const { data: session } = useSession();
 
-    const [isAdmin, setIsAdmin] = useState(false);
-
     const [newVoters, setNewVoters] = useState<string[]>([])
 
     const [isWaiting, setIsWaiting] = useState(false);
@@ -25,6 +22,7 @@ export default function SetAllowedVoters({ id }: { id: string }) {
 
     const fetchAllowedVoters = async () => {
         try {
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -52,6 +50,7 @@ export default function SetAllowedVoters({ id }: { id: string }) {
 
         try {
             setIsWaiting(true);
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -82,6 +81,7 @@ export default function SetAllowedVoters({ id }: { id: string }) {
     useEffect(() => {
         const checkAdmin = async () => {
             if (session) {
+                //@typescript-eslint/no-explicit-any
                 const provider: any = await detectEthereumProvider();
                 if (provider) {
                     const ethersProvider = await new ethers.BrowserProvider(provider);
@@ -90,10 +90,7 @@ export default function SetAllowedVoters({ id }: { id: string }) {
 
                     const owner = await contract.owner();
 
-                    if (owner.toLowerCase() === session.user.id.toLowerCase()) {
-                        setIsAdmin(true);
-                    }
-                    else {
+                    if (owner.toLowerCase() !== session.user.id.toLowerCase()) {
                         router.push("/hoi-nhom-binh-chon");
                     }
                 }

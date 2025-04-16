@@ -1,4 +1,3 @@
-import { JWT } from "next-auth/jwt";
 import { NextAuthOptions } from "next-auth";
 
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -14,7 +13,7 @@ export const authOptions: NextAuthOptions = {
                     type: "text",
                 },
             },
-            async authorize(credentials, req) {
+            async authorize(credentials) {
                 if (!credentials?.id) {
                     return null;
                 }
@@ -25,7 +24,7 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        async jwt({ token, user, trigger, session }): Promise<any> {
+        async jwt({ token, user, trigger }): Promise<any> {
             if (user && trigger === "signIn") {
                 return { ...token, user };
             }

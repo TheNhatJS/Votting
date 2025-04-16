@@ -1,6 +1,6 @@
 import SetAllowedVoters from "@/components/setAllowedVoters";
 
-export default function SetAllowedVotersPage({params}: SearchParamProps) {
-    const {id} = params;
-    return <SetAllowedVoters id={String(id) || ""}/>
+export default async function SetAllowedVotersPage({params}: SearchParamProps) {
+    const id = (await params)?.id;
+    return <SetAllowedVoters id={id || ''}/>
 }

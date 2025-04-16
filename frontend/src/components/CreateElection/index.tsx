@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { FaTrash } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
-import { uploadFileToIPFS } from "@/app/api/upload/image/route";
+//import { uploadFileToIPFS } from "@/app/api/upload/image/route";
 import { toast, Toaster } from "sonner";
 import Waiting from "../share/Waiting";
 
@@ -56,20 +56,48 @@ export default function CreateElectionTemPlate() {
     //     }
     // }
 
+    // async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    //     const file = e.target.files?.[0];
+    //     if (file) {
+    //         const data = new FormData();
+    //         data.set("file", file);
+
+    //         const res = await uploadFileToIPFS(data);
+    //         if (res.success && res.pinataURL) {
+    //             setElectionData((prevData) => ({
+    //                 ...prevData,
+    //                 imageUrlElection: res.pinataURL,
+    //             }));
+    //         } else if (!res.success) {
+    //             console.log(res.message || "Unknown error");
+    //         }
+    //     }
+    // }
+
     async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (file) {
             const data = new FormData();
             data.set("file", file);
-
-            const res = await uploadFileToIPFS(data);
-            if (res.success && res.pinataURL) {
-                setElectionData((prevData) => ({
-                    ...prevData,
-                    imageUrlElection: res.pinataURL,
-                }));
-            } else {
-                console.log(res.message || "Unknown error");
+    
+            try {
+                const res = await fetch("/api/upload/image", {
+                    method: "POST",
+                    body: data,
+                });
+    
+                const result = await res.json();
+    
+                if (result.success && result.pinataURL) {
+                    setElectionData((prevData) => ({
+                        ...prevData,
+                        imageUrlElection: result.pinataURL,
+                    }));
+                } else {
+                    console.error(result.message || "Unknown error");
+                }
+            } catch (error) {
+                console.error("Error uploading file:", error);
             }
         }
     }
@@ -93,24 +121,61 @@ export default function CreateElectionTemPlate() {
     //     }
     // }
 
+    // async function onFileChangeCandidate(e: React.ChangeEvent<HTMLInputElement>, index: number) {
+    //     const file = e.target.files?.[0];
+    //     if (file) {
+    //         const data = new FormData();
+    //         data.set("file", file);
+
+    //         const res = await uploadFileToIPFS(data);
+    //         if (res.success && res.pinataURL) {
+    //             setElectionData((prevData) => {
+    //                 const newImageUrl = [...prevData.imageUrl];
+    //                 newImageUrl[index] = res.pinataURL;
+    //                 return {
+    //                     ...prevData,
+    //                     imageUrl: newImageUrl,
+    //                 };
+    //             });
+    //         } else if (!res.success) {
+    //             console.log(res.message || "Unknown error");
+    //         }
+    //     }
+    // }
+
     async function onFileChangeCandidate(e: React.ChangeEvent<HTMLInputElement>, index: number) {
         const file = e.target.files?.[0];
         if (file) {
             const data = new FormData();
             data.set("file", file);
-
-            const res = await uploadFileToIPFS(data);
-            if (res.success && res.pinataURL) {
-                setElectionData((prevData) => {
-                    const newImageUrl = [...prevData.imageUrl];
-                    newImageUrl[index] = res.pinataURL;
-                    return {
-                        ...prevData,
-                        imageUrl: newImageUrl,
-                    };
+    
+            try {
+                const res = await fetch("/api/upload/image", {
+                    method: "POST",
+                    body: data,
                 });
-            } else {
-                console.log(res.message || "Unknown error");
+    
+                if (!res.ok) {
+                    console.error("Failed to upload file:", res.statusText);
+                    return;
+                }
+    
+                const result = await res.json();
+    
+                if (result.success && result.pinataURL) {
+                    setElectionData((prevData) => {
+                        const newImageUrl = [...prevData.imageUrl];
+                        newImageUrl[index] = result.pinataURL;
+                        return {
+                            ...prevData,
+                            imageUrl: newImageUrl,
+                        };
+                    });
+                } else {
+                    console.error(result.message || "Unknown error");
+                }
+            } catch (error) {
+                console.error("Error uploading file:", error);
             }
         }
     }
@@ -118,7 +183,8 @@ export default function CreateElectionTemPlate() {
     //Tạo cuộc bầu cử
     async function createElection() {
         setIsWaiting(true);
-        const provider: any = await detectEthereumProvider();
+        // @typescript-eslint/no-explicit-any
+        const provider: any  = await detectEthereumProvider();
         if (provider) {
             const ethersProvider = new ethers.BrowserProvider(provider);
             const signer = await ethersProvider.getSigner();
@@ -183,6 +249,7 @@ export default function CreateElectionTemPlate() {
     useEffect(() => {
         const checkAdmin = async () => {
             if (session?.user?.id) {
+                // @typescript-eslint/no-explicit-any
                 const provider: any = await detectEthereumProvider();
                 if (provider) {
                     const ethersProvider = new ethers.BrowserProvider(provider);

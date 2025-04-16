@@ -5,7 +5,6 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import ContractABI from "@/data/abi.contract.json";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
-import { Session } from "inspector/promises";
 import { useSession } from "next-auth/react";
 import { toast, Toaster } from "sonner";
 import Waiting from "../share/Waiting";
@@ -13,7 +12,6 @@ import Waiting from "../share/Waiting";
 export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
     const { data: session } = useSession();
-    const [isWaiting, setIsWaiting] = useState(false);
 
     type ElectionDetail = {
         name: string,
@@ -46,6 +44,7 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
 
     const fecthElectionDetail = async () => {
         try {
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -65,8 +64,10 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
                     imageURLElection: detailE[7]
                 })
 
-                const candidates: any[] = await contract.getCandidateVotes(id);
+                // @typescript-eslint/no-explicit-any
+                const candidates: any = await contract.getCandidateVotes(id);
                 const formattedCandidate: Candidate[] = candidates.map(
+                    //@typescript-eslint/no-explicit-any
                     (candidate: any) => ({
                         name: candidate[0],
                         votes: candidate[1],
@@ -91,7 +92,7 @@ export default function GroupVottingDetailTemplate({ id }: { id: string }) {
     const vote = async (candidate: string) => {
         setWaitingNameVote(candidate);
         try {
-            
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
 
             if (provider) {

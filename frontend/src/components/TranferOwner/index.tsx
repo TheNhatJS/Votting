@@ -13,13 +13,13 @@ import Waiting from "../share/Waiting";
 export default function TranferOwner() {
     const router = useRouter();
     const { data: session } = useSession();
-    const [isAdmin, setIsAdmin] = useState(false);
     const [newOwner, setNewOwner] = useState<string>("");
     const [isWaiting, setIsWaiting] = useState(false);
 
     const handleTransferOwner = async () => {
         try {
             setIsWaiting(true);
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -42,6 +42,7 @@ export default function TranferOwner() {
     useEffect(() => {
         const checkAdmin = async () => {
             if (session) {
+                //@typescript-eslint/no-explicit-any
                 const provider: any = await detectEthereumProvider();
                 if (provider) {
                     const ethersProvider = new ethers.BrowserProvider(provider);
@@ -50,9 +51,7 @@ export default function TranferOwner() {
 
                     const ownerAddress = await contract.owner();
                     const userAddress = session.user.id;
-                    if (ownerAddress.toLowerCase() === userAddress.toLowerCase()) {
-                        setIsAdmin(true);
-                    } else {
+                    if (ownerAddress.toLowerCase() !== userAddress.toLowerCase()) {
                         router.push("/hoi-nhom-binh-chon");
                     }
                 }

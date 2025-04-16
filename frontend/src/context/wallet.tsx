@@ -26,6 +26,7 @@ interface WalletContextProviderProps {
 export const WalletContextProvider: React.FC<WalletContextProviderProps> = ({ children }) => {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [userAddress, setUserAddress] = useState<string | null>(null);
+  
   const [signer, setSigner] = useState<any>(null);
 
   return (

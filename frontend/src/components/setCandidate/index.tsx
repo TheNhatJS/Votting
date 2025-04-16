@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Header from "../Header";
-import { uploadFileToIPFS } from "@/app/api/upload/image/route";
+//import { uploadFileToIPFS } from "@/app/api/upload/image/route";
 import { FaTrash } from "react-icons/fa6";
 import detectEthereumProvider from "@metamask/detect-provider";
 import { ethers } from "ethers";
 import ContractABI from "@/data/abi.contract.json";
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
-import { resolve } from "path";
 import { useSession } from "next-auth/react";
 import Waiting from "../share/Waiting";
 
@@ -21,7 +20,6 @@ type setCandidateData = {
 export default function SetCandidateTemplate({ id }: { id: string }) {
     const router = useRouter();
     const { data: session } = useSession();
-    const [isAdmin, setIsAdmin] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
 
     const [NewCandidate, setNewCandidate] = useState<setCandidateData>(
@@ -31,26 +29,62 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
         }
     );
 
+    // async function onFileChangeCandidate(e: React.ChangeEvent<HTMLInputElement>, index: number) {
+    //     const file = e.target.files?.[0];
+    //     if (file) {
+    //         const data = new FormData();
+    //         data.set("file", file);
+    //         //@typescript-eslint/no-explicit-any
+    //         const res: any = await uploadFileToIPFS(data);
+    //         console.log("res: ", res.pinataURL);
+    //         if (res.success) {
+    //             const newImageUrll = [...NewCandidate.newImageUrl];
+    //             newImageUrll[index] = res.pinataURL;
+    //             setNewCandidate(
+    //                 {
+    //                     ...NewCandidate,
+    //                     newImageUrl: newImageUrll
+    //                 }
+    //             );
+    //             //console.log("New image URL: ", NewCandidate.newImageUrl);
+
+    //         } else {
+    //             console.log(res.message);
+    //         }
+    //     }
+    // }
+
     async function onFileChangeCandidate(e: React.ChangeEvent<HTMLInputElement>, index: number) {
         const file = e.target.files?.[0];
         if (file) {
             const data = new FormData();
             data.set("file", file);
-            const res: any = await uploadFileToIPFS(data);
-            console.log("res: ", res.pinataURL);
-            if (res.success) {
-                const newImageUrll = [...NewCandidate.newImageUrl];
-                newImageUrll[index] = res.pinataURL;
-                setNewCandidate(
-                    {
+    
+            try {
+                const res = await fetch("/api/upload/image", {
+                    method: "POST",
+                    body: data,
+                });
+    
+                if (!res.ok) {
+                    console.error("Failed to upload file:", res.statusText);
+                    return;
+                }
+    
+                const result = await res.json();
+    
+                if (result.success && result.pinataURL) {
+                    const newImageUrll = [...NewCandidate.newImageUrl];
+                    newImageUrll[index] = result.pinataURL;
+                    setNewCandidate({
                         ...NewCandidate,
-                        newImageUrl: newImageUrll
-                    }
-                );
-                //console.log("New image URL: ", NewCandidate.newImageUrl);
-
-            } else {
-                console.log(res.message);
+                        newImageUrl: newImageUrll,
+                    });
+                } else {
+                    console.error(result.message || "Unknown error");
+                }
+            } catch (error) {
+                console.error("Error uploading file:", error);
             }
         }
     }
@@ -67,6 +101,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
         try {
             setIsWaiting(true);
             //Phát hiện trình cung cấp Ethereum (Ethereum Provider) trong trình duyệt, thường là MetaMask.
+            //@typescript-eslint/no-explicit-any
             const provider: any = await detectEthereumProvider();
             if (provider) {
                 const ethersProvider = new ethers.BrowserProvider(provider);
@@ -105,6 +140,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
     useEffect(() => {
         const checkAdmin = async () => {
             if (session?.user?.id) {
+                //@typescript-eslint/no-explicit-any
                 const provider: any = await detectEthereumProvider();
                 if (provider) {
                     const ethersProvider = new ethers.BrowserProvider(provider);
@@ -113,9 +149,7 @@ export default function SetCandidateTemplate({ id }: { id: string }) {
 
                     const owner = await contract.owner();
 
-                    if (owner.toLowerCase() === session.user.id.toLowerCase()) {
-                        setIsAdmin(true);
-                    } else {
+                    if (owner.toLowerCase() !== session.user.id.toLowerCase()) {
                         router.push("/hoi-nhom-binh-chon");
                     }
                 }
